@@ -3,11 +3,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
 from selenium.webdriver.support.ui import WebDriverWait
-
 # expected_conditions (EC): Selenium에서 제공하는 여러 가지 조건을 정의한 모듈
 from selenium.webdriver.support import expected_conditions as EC
 
 from bs4 import BeautifulSoup
+import sys
 import time
 
 options = Options()
@@ -20,28 +20,24 @@ options.add_experimental_option("detach", True)
 
 # run webdriver
 driver = webdriver.Chrome(options=options)
-keyword = "돈카츠"
 # 전주역 테스트 좌표
+keyword = "돈카츠"
 cx = "127.161762930"
 cy = "35.849829071"
+# 데이터 입력 받기
+# index 0: file path
+# keyword = sys.argv[1:]
+# cx = sys.argc[2:]
+# cy = sys.argc[3:]
+# print("params :", keyword, cx, cy)
 URL = f"https://pcmap.place.naver.com/restaurant/list?query={keyword}&x={cx}&y={cy}"
+print("URL :", URL)
 # URL = f"https://map.naver.com/restaurant/list?query={keyword}&x=126.97828200000112&y=37.56846119999963&clientX=126.97825&clientY=37.566551"
 #https://pcmap.place.naver.com/restaurant/list?query=%EB%8F%88%EC%B9%B4%EC%B8%A0&x=127.161762930&y=35.849829071
 
 
+
 driver.get(url = URL)
-
-
-# iframe focus
-# def switch_left():
-#     driver.switch_to.parent_frame()
-#     iframe = driver.find_element(By.XPATH,'//*[@id="searchIframe"]')
-#     driver.switch_to.frame(iframe)
-
-# wait = WebDriverWait(driver, 10)
-# wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="searchIframe"]')))
-# switch_left()
-
 
 scroll_container = driver.find_element(By.CSS_SELECTOR, ".Ryr1F")
 # execute_script = js 실행.
@@ -74,13 +70,13 @@ for index, item in enumerate(result_items, start=1):
         try :
             isOpen = item.find('span', class_="MqNOY").get_text()
         except :
-            isOpen = "없음"
+            isOpen = "null"
         
         # 별점 
         try :
             rating_value = item.find('span', class_="orXYY").get_text().replace("별점","").strip()
         except :
-            rating_value = "없음"
+            rating_value = "null"
              
         # 리뷰
         reviews_ele = item.find('div', class_="MVx6e")
