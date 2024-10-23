@@ -19,7 +19,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains
 
-from selenium.common.exceptions import NoSuchElementException
+from urllib.parse import urlparse, urlunparse # url query 정리
+import json
+
 # 상수
 WAIT_TIMEOUT = 10 ## 대기 시간(초)
 KEYWORD = "맥도날드 명동" ## 테스트코드 맥도날드 명동점
@@ -63,13 +65,37 @@ def focus_iframe(type):
         iframe = driver.find_element(By.XPATH,'//*[@id="entryIframe"]')
     driver.switch_to.frame(iframe)
 
+# 이미지
+img_list = []
+def select_tab_img():
+    tab_list = driver.find_elements(By.CSS_SELECTOR, '.veBoZ')
+    # 사진 탭 진입
+    for tab in tab_list:
+         if tab.text == '사진':
+              tab.click()
+              
+    wait = WebDriverWait(driver, WAIT_TIMEOUT)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'wzrbN')))
+    img_elems = driver.find_elements(By.CLASS_NAME, 'wzrbN')
+    for img in img_elems:
+        img_src = img.find_element(By.XPATH,'.//a/img').get_attribute('src')
+        img_list.append(img_src)
+
 # 상세 정보
 def detail_info():
     focus_iframe('detail')
-    # bs4 parsing
+    # 현재 URL 가져오기 (리스트와 같이 나옴) <-- 이해 필요
+    current_url = driver.current_url
+    parsed_url = urlparse(current_url)
+    # 쿼리 문자열 제거
+    cleaned_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
+    
+    # parsing to bs4 
     result_page = driver.page_source
     soup = BeautifulSoup(result_page, 'html.parser')
-    detail_ele = soup.find('div', class_='PIbes')
+    # wait = WebDriverWait(driver, WAIT_TIMEOUT)
+    # wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'PIbes'))) <- 안 잡힘
+    detail_ele = soup.find('div', class_='PIbes')   #fix redirect 시 사진 넘어가기 전 상세정보 필요
     
     detail_addr = detail_ele.find('div', class_='vV_z_').getText()  # 상세 주소
     current_status = detail_ele.find('em').get_text()  # 영업 여부
@@ -80,9 +106,21 @@ def detail_info():
         end_time = time_ele
     elif current_status == '영업 종료':
         strt_time = time_ele
-    # restaurantUrl
+    # img url list
+    select_tab_img()
 
-    print("상세주소 :"+detail_addr, "\n영업 여부:", current_status, "\n오픈 시간:",strt_time, "\n마감 시간:",end_time)
+    detail_info = {
+         'detail_addr' : detail_addr,
+         'current_status' : current_status,
+         'strt_time' : strt_time,
+         'end_time' : end_time,
+         'naver_url' : cleaned_url,
+         'img_url' : img_list
+    }
+    json_detail_info = json.dumps(detail_info, ensure_ascii=False);
+    print("dic", json_detail_info)
+    return json_detail_info
+    # print("상세주소 :"+detail_addr, "\n영업 여부:", current_status, "\n오픈 시간:",strt_time, "\n마감 시간:",end_time, "\n네이버 URL:", cleaned_url, "\n이미지 URL:", img_list)
 
 ### 크롤링 시작 함수
 def crwl_data():
@@ -96,13 +134,23 @@ def crwl_data():
             # 키워드 포함 여부 체크 
             search_restaurant = driver.find_element(By.XPATH, f'//*[contains(text(),"{KEYWORD}")]')
             select_restaurant = search_restaurant.find_element(By.XPATH, '../../../div/div/span')
+            # 스크롤 이동
+            # actions.move_to_element(select_restaurant).perform()
             # 클릭 가능할 때까지 대기
-            # wait.until(EC.element_to_be_clickable(select_restaurant)) <-- 안 되는 이유 찾기
-            time.sleep(1)
-            select_restaurant.click();
+            # wait.until(EC.visibility_of_element_located(select_restaurant))
+            # WebDriverWait(driver, 10).until(
+            #     lambda d: d.execute_script('return document.readyState') == 'complete'
+            # )
+            time.sleep(2) #fix 뒤의 지도가 로딩되어야 클릭이벤트가 작동하는 것으로 파악됨. 지도렌더링 기다릴 방법 찾을 것
+            actions = ActionChains(driver)
+            actions.click(select_restaurant).perform()
+            # select_restaurant.click();
     except:
         print("FAIL TO SEARCH LIST")
     ## 최종 정보 크롤링
     detail_info()
 
+# test
 crwl_data()
+# 드라이버 종료
+driver.quit()

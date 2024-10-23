@@ -34,6 +34,9 @@ driver.get(url = URL)
 
 # 화면 스크롤
 def scroll_list() :
+    wait = WebDriverWait(driver, WAIT_TIMEOUT)
+    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@id="app-root"]/div'))
+
     scroll_container = driver.find_element(By.CSS_SELECTOR, ".Ryr1F")
     # execute_script = js 실행.
     last_height = driver.execute_script("return arguments[0].scrollHeight", scroll_container)
@@ -49,6 +52,7 @@ def scroll_list() :
             if new_height == last_height:
                 break
             last_height = new_height
+
     parsing_page()
 
 # bs4 parsing
@@ -63,7 +67,7 @@ def parsing_page():
 def crwl_data(ele):
     result_items = ele.find_all('li', class_='rTjJo')
     for index, item in enumerate(result_items, start=1):
-            restaurant_name = item.find('span', class_="TYaxT") # 가게명
+            restaurant_name = item.find('span', class_="TYaxT") # 상호명
             # 영업 여부
             try :
                 isOpen = item.find('span', class_="MqNOY").get_text()
@@ -77,14 +81,13 @@ def crwl_data(ele):
             # 리뷰
             reviews_ele = item.find('div', class_="MVx6e")
             for item in reviews_ele:
-                if len(item['class']) == 1:
+                if len(item['class']) == 1: #fix 방문자 / 블로그 리뷰 분리 조건문 추가 필요
                     print(item.get_text().replace("리뷰","").strip())
                     reviews_value = item.get_text().replace("리뷰","").strip()
             
             print(index, ".", restaurant_name.get_text(), "\n 영업여부 :", isOpen, "\n 별점 :", rating_value, "\n 리뷰 수 : "+reviews_value)
 
-wait = WebDriverWait(driver, WAIT_TIMEOUT)
-wait.until(EC.presence_of_element_located(By.XPATH, '//*[@id="app-root"]/div'))
+# test
 scroll_list()
 # 드라이버 종료
 driver.quit()
