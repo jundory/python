@@ -22,7 +22,6 @@ from selenium.webdriver import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 # 상수
 WAIT_TIMEOUT = 10 ## 대기 시간(초)
-# KEYWORD = "이스트빌리지서울 광화문점"
 KEYWORD = "맥도날드 명동" ## 테스트코드 맥도날드 명동점
 URL = f"https://map.naver.com/restaurant/list?query={KEYWORD}" # https://pcmap.place.naver.com/place/list?query <-- 해당 url도 가능
 
@@ -71,9 +70,9 @@ def detail_info():
     result_page = driver.page_source
     soup = BeautifulSoup(result_page, 'html.parser')
     detail_ele = soup.find('div', class_='PIbes')
+    
     detail_addr = detail_ele.find('div', class_='vV_z_').getText()  # 상세 주소
     current_status = detail_ele.find('em').get_text()  # 영업 여부
-    # current_status = detail_ele.find('div', class_='A_cdD').get_text()  # 영업 여부
     time_ele = soup.find('time', {'aria-hidden': 'true'}).get_text()   # 영업 시간
     strt_time = None
     end_time = None
@@ -98,11 +97,11 @@ def crwl_data():
             search_restaurant = driver.find_element(By.XPATH, f'//*[contains(text(),"{KEYWORD}")]')
             select_restaurant = search_restaurant.find_element(By.XPATH, '../../../div/div/span')
             # 클릭 가능할 때까지 대기
-            wait.until(EC.element_to_be_clickable(select_restaurant))
-            # ActionChains(driver).click(select_restaurant).perform()
+            # wait.until(EC.element_to_be_clickable(select_restaurant)) <-- 안 되는 이유 찾기
+            time.sleep(1)
             select_restaurant.click();
     except:
-        print("상세 검색창 리다이렉트")
+        print("FAIL TO SEARCH LIST")
     ## 최종 정보 크롤링
     detail_info()
 
