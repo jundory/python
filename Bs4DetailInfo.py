@@ -24,7 +24,7 @@ import json
 
 # 상수
 WAIT_TIMEOUT = 10 ## 대기 시간(초)
-KEYWORD = "맥도날드 명동" ## 테스트코드 맥도날드 명동점
+KEYWORD = "맥도날드 명동점" ## 테스트코드 맥도날드 명동점
 URL = f"https://map.naver.com/restaurant/list?query={KEYWORD}" # https://pcmap.place.naver.com/place/list?query <-- 해당 url도 가능
 
 # 드라이버 실행 및 옵션 정의

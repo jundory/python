@@ -34,8 +34,8 @@ driver.get(url = URL)
 
 # 화면 스크롤
 def scroll_list() :
-    wait = WebDriverWait(driver, WAIT_TIMEOUT)
-    wait.until(EC.presence_of_element_located(By.XPATH, '//*[@id="app-root"]/div'))
+    # wait = WebDriverWait(driver, WAIT_TIMEOUT)
+    # wait.until(EC.presence_of_element_located(By.XPATH, '//*[@id="app-root"]/div'))
 
     scroll_container = driver.find_element(By.CSS_SELECTOR, ".Ryr1F")
     # execute_script = js 실행.

@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC    #expected_conditions (EC): Selenium에서 제공하는 여러 가지 조건을 정의한 모듈
 
 import time
+import json
 
 options = Options()
 # 차단 방지 user-agent 설정
@@ -56,7 +57,7 @@ while True:
         last_height = new_height
 
 # //* = 경로에 관계없이 문서 속의 엘러먼트를 선택  (@ = all)
-elemets = driver.find_elements(By.XPATH,'//*[@id="_pcmap_list_scroll_container"]//li')[2:]
+elemets = driver.find_elements(By.XPATH,'//*[@id="_pcmap_list_scroll_container"]//li')[2:] # 슬라이싱
 for index, item in enumerate(elemets, start=1) : 
         # 가게명 .//a = 현재 노드의 a 엘러먼트 자손들을 선택
         restaurant_name = item.find_element(By.CLASS_NAME,'CHC5F').find_element(By.XPATH, ".//a/div/div/span").text
@@ -80,13 +81,5 @@ for index, item in enumerate(elemets, start=1) :
         print(index, ". ", restaurant_name, "\n 영업 정보 : ", isOpen, "\n 별점 : ", rating)
 print("총 식당 수 : ", len(elemets), "개")
 
-# 검색 및 조회
-# def search_info(restName) :
-#     driver.find_element(By.CSS_SELECTOR, ".input_search").send_keys(restName)
-#     time.sleep(1)
-#     query.send_keys(Keys.ENTER);
-
-# search_info("식당진")
-
 # 드라이버 종료
-# driver.quit()
+driver.quit()
